@@ -2,7 +2,7 @@
 
 每天兩章、三十天六十章的讀經工具。純靜態網頁,無需建置與伺服器,打開 `index.html` 即可使用。
 
-**線上版**:https://nonstopbiblereading.github.io/daily_reading_202609/
+**線上版**:https://nonstopbiblereading.github.io/daily_reading/
 
 ## 這是什麼
 
