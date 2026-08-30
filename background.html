@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>背景索引 · 歷史地理人物</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="data/plan.js"></script>
+<script src="data/days-01.js"></script>
+<script src="data/days-11.js"></script>
+<script src="data/days-21.js"></script>
+<script src="js/common.js"></script>
+</head>
+<body>
+<script>renderNav("bg")</script>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-kicker">背景索引</div>
+    <h1 class="page-title">這個月經文背後,需要先知道的事</h1>
+    <p class="page-sub">
+      把 30 天六十章裡「不解釋就容易讀過去或讀錯」的<b>歷史事件、地理位置、人物身分與文化風俗</b>集中在一頁。
+      可依類別篩選;點日期回到當天的完整內容。標示 ↗ 的條目可連到
+      <a href="https://nonstopbiblereading.github.io/bible_explorer/" target="_blank" rel="noopener">聖經歷史地理人物工具</a>作延伸。
+    </p>
+    <div class="tools" id="filters"></div>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+const ALL = [];
+PLAN.days.forEach(d => (d.bg || []).forEach(b => ALL.push({ ...b, day: d.d, short: d.short })));
+let cur = "all";
+
+const KINDS = [["all", "全部"], ["history", "歷史"], ["place", "地理"], ["person", "人物"], ["custom", "文化風俗"]];
+document.getElementById("filters").innerHTML = KINDS.map(([k, label]) => {
+  const c = k === "all" ? ALL.length : ALL.filter(x => x.k === k).length;
+  return `<button class="mini" data-k="${k}" onclick="setK('${k}')">${label} ${c}</button>`;
+}).join("");
+
+function setK(k) {
+  cur = k;
+  document.querySelectorAll("#filters .mini").forEach(b =>
+    b.style.color = b.dataset.k === k ? "var(--primary)" : "");
+  render();
+}
+function render() {
+  const rows = ALL.filter(b => cur === "all" || b.k === cur);
+  let html = "", lastDay = 0;
+  for (const b of rows) {
+    if (b.day !== lastDay) {
+      if (lastDay) html += "</div>";
+      html += `<div class="sec-label" style="margin-top:26px">9/${b.day} · ${b.short}
+        &nbsp;<a href="day.html?d=${b.day}" style="text-transform:none;letter-spacing:0">看當天內容 ›</a></div>
+        <div class="card" style="--accent:var(--c-bg)">`;
+      lastDay = b.day;
+    }
+    html += `<div class="bg-item">
+      <div class="bg-head"><b>${b.n}</b><span class="tag ${b.k}">${TAG_LABEL[b.k]}</span></div>
+      <p>${b.p}</p><div>${refsHtml(b.refs)}</div>
+      ${b.link ? `<a class="xlink" href="${routeUrl(b.link.href)}" target="_blank" rel="noopener">${b.link.label} ↗</a>` : ""}
+    </div>`;
+  }
+  if (lastDay) html += "</div>";
+  document.getElementById("list").innerHTML = html || `<p class="page-sub">沒有符合的條目。</p>`;
+}
+setK("all");
+renderFooter();
+</script>
+</body>
+</html>

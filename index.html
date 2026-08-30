@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日讀經 · 2026 年 9 月進度</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="data/plan.js"></script>
+<script src="data/days-01.js"></script>
+<script src="data/days-11.js"></script>
+<script src="data/days-21.js"></script>
+<script src="js/common.js"></script>
+</head>
+<body>
+<script>renderNav("home")</script>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-kicker">2026 / 09 · 每天兩章</div>
+    <h1 class="page-title" id="ttl"></h1>
+    <p class="page-sub" id="sub"></p>
+    <div class="stat-row">
+      <div class="st"><b>30</b><span>天</span></div>
+      <div class="st"><b>60</b><span>章</span></div>
+      <div class="st"><b id="st-done">0</b><span>已完成</span></div>
+      <div class="st"><b id="st-bg">—</b><span>則背景補充</span></div>
+    </div>
+    <div class="bar"><i id="bar" style="width:0%"></i></div>
+    <div class="tools">
+      <button class="mini" onclick="jumpToday()">跳到今天</button>
+      <button class="mini" onclick="resetAll()">清除進度紀錄</button>
+    </div>
+  </div>
+
+  <div class="sec-label">九月讀經表</div>
+  <div class="cal" id="cal"></div>
+
+  <div class="sec-label">這個月的路線</div>
+  <div class="card" style="--accent:var(--primary)">
+    <div class="card-title">一個月讀下來的軸線</div>
+    <p style="font-size:13.5px">
+      <b>1–10 日|門被打開</b>:從彼得進哥尼流的家開始,福音跨過族群的界線(徒 10–11、徒 16–17),
+      中間穿插低谷中的求問(詩 143、賽 30)與身分的更新(林後 3、5;弗 4–5)。<br><br>
+      <b>11–20 日|重生與服事的樣子</b>:從「從上頭生」到「從裡面流出」(約 3、7),
+      經過雅各對舌頭與智慧的檢查、大衛與約珥的回轉、以利亞的低谷與交棒,
+      落在洗腳與虛己(可 10、約 13;腓 2、太 23)。<br><br>
+      <b>21–30 日|代價與接納</b>:十字架的愚拙(林前 1–2)、交託與尋回(太 25、路 19)、
+      神真正要的敬虔(彌 6、賽 58、雅 1–2)、那一夜(路 22、約 18)、
+      瓦器與逼迫(林後 4、6;徒 7),最後以「彼此接納」收尾(羅 14–15)。
+    </p>
+  </div>
+
+  <div class="card" style="--accent:var(--c-bg)">
+    <div class="card-title">每天的五個區塊</div>
+    <p style="font-size:13.5px">
+      ① 經文重點 ② 亮點經句 ③ 讀經心得 ④ 今日應用(總結),
+      再加上 ⑤ <b>背景補充</b>——把當天經文背後需要解釋的<b>歷史、地理、人物、文化風俗</b>整理出來,
+      避免讀到地名、官職、禮俗時卡住或誤讀。相關條目會連到
+      <a href="https://nonstopbiblereading.github.io/bible_explorer/" target="_blank" rel="noopener">聖經歷史地理人物工具</a>的地圖、時間軸與人物網。
+    </p>
+    <p style="margin-top:8px"><a class="xlink" href="background.html">瀏覽整月背景索引 ›</a></p>
+  </div>
+</div>
+
+<script>
+document.getElementById("ttl").textContent = PLAN.title;
+document.getElementById("sub").textContent = PLAN.sub;
+document.getElementById("st-bg").textContent =
+  PLAN.days.reduce((n, d) => n + (d.bg ? d.bg.length : 0), 0);
+
+function renderCal() {
+  const done = getDone();
+  let html = "";
+  ["日","一","二","三","四","五","六"].forEach((w, i) =>
+    html += `<div class="cal-head${i === 0 ? " sun" : ""}">${w}</div>`);
+  // 2026-09-01 是星期二 → 前面補 2 格
+  const lead = weekday(1);
+  for (let i = 0; i < lead; i++) html += `<div class="day-cell empty"></div>`;
+  for (const day of PLAN.days) {
+    const wd = weekday(day.d), ok = !!done[day.d];
+    html += `<a class="day-cell${ok ? " done" : ""}${wd === 0 ? " sun" : ""}" href="day.html?d=${day.d}">
+      <div class="dc-num">9/${day.d}<span class="chk">${ok ? "✓ 已讀" : ""}</span></div>
+      <div class="dc-ref">${day.ref.replace("；", "<br>")}</div>
+      <div class="dc-theme">${day.theme}</div>
+    </a>`;
+  }
+  document.getElementById("cal").innerHTML = html;
+  const n = doneCount();
+  document.getElementById("st-done").textContent = n;
+  document.getElementById("bar").style.width = (n / PLAN.days.length * 100).toFixed(1) + "%";
+}
+function jumpToday() {
+  const t = new Date();
+  const d = (t.getFullYear() === 2026 && t.getMonth() === 8) ? t.getDate() : 1;
+  location.href = "day.html?d=" + Math.min(d, 30);
+}
+function resetAll() {
+  if (confirm("確定要清除本月所有「已讀」紀錄嗎?此動作無法復原。")) {
+    localStorage.removeItem(DONE_KEY);
+    renderCal();
+  }
+}
+renderCal();
+renderFooter();
+</script>
+</body>
+</html>
