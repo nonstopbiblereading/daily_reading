@@ -3,24 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>每日內容 · 九月讀經</title>
+<title>每日內容 · 每日讀經</title>
 <link rel="stylesheet" href="css/style.css">
-<script src="data/plan.js"></script>
-<script src="data/days-01.js"></script>
-<script src="data/days-11.js"></script>
-<script src="data/days-21.js"></script>
-<script src="data/questions.js"></script>
+<script src="data/months.js"></script>
 <script src="js/common.js"></script>
 </head>
 <body>
-<script>renderNav("day")</script>
+<div id="nav-slot"></div>
 
 <div class="wrap reading" id="wrap"></div>
 
-<script>
-const n = Math.min(30, Math.max(1, Number(new URLSearchParams(location.search).get("d")) || 1));
-const day = getDay(n);
+<div id="footer-slot"></div>
 
+<script>
 const SECTIONS = [
   { id:"s1", num:"①", name:"經文重點", c:"var(--c-point)" },
   { id:"s2", num:"②", name:"亮點經句", c:"var(--c-verse)" },
@@ -29,62 +24,81 @@ const SECTIONS = [
   { id:"s5", num:"⑤", name:"今日應用", c:"var(--c-apply)" },
   { id:"s6", num:"⑥", name:"背景補充", c:"var(--c-bg)" },
 ];
+let n, day, secOff = 124;
 
-const body = {
-  s1: day.points.map(p =>
-    `<div class="pt"><b>${p.t}</b><span class="r">${p.r}</span><p>${p.p}</p></div>`).join(""),
+boot("day").then(() => {
+  const last = PLAN.days.length;
+  n = Math.min(last, Math.max(1, Number(new URLSearchParams(location.search).get("d")) || 1));
+  day = getDay(n);
+  render(last);
+  renderFooter();
+});
 
-  s2: day.verses.map(v =>
-    `<div class="vs"><q>${v.q}</q><span class="ref2">${v.r}</span><div class="why">${v.why}</div></div>`).join(""),
+function render(last) {
+  const body = {
+    s1: day.points.map(p =>
+      `<div class="pt"><b>${p.t}</b><span class="r">${p.r}</span><p>${p.p}</p></div>`).join(""),
 
-  s3: `<div class="prose">${day.reflect.map(t => `<p>${t}</p>`).join("")}</div>`,
+    s2: day.verses.map(v =>
+      `<div class="vs"><q>${v.q}</q><span class="ref2">${v.r}</span><div class="why">${v.why}</div></div>`).join(""),
 
-  s4: `<p class="q-note">上面是讀到的,下面是留給你自己回答的。不必急著找答案,帶著問題過一天也算數。</p>
-       <div class="qs">${(QUESTIONS[n] || []).map(q => `<div class="q">${q}</div>`).join("")}</div>`,
+    s3: `<div class="prose">${day.reflect.map(t => `<p>${t}</p>`).join("")}</div>`,
 
-  s5: `<div class="aim"><b>總結:</b>${day.apply.aim}</div>
-       <ol class="steps">${day.apply.steps.map(s => `<li>${s}</li>`).join("")}</ol>`,
+    s4: `<p class="q-note">上面是讀到的,下面是留給你自己回答的。不必急著找答案,帶著問題過一天也算數。</p>
+         <div class="qs">${(QUESTIONS[n] || []).map(q => `<div class="q">${q}</div>`).join("")}</div>`,
 
-  s6: day.bg.map(b => `<div class="bg-item">
-      <div class="bg-head"><b>${b.n}</b><span class="tag ${b.k}">${TAG_LABEL[b.k]}</span></div>
-      <p>${b.p}</p>
-      <div>${refsHtml(b.refs)}</div>
-      ${b.link ? `<a class="xlink" href="${routeUrl(b.link.href)}" target="_blank" rel="noopener">${b.link.label} ›</a>` : ""}
-    </div>`).join(""),
-};
+    s5: `<div class="aim"><b>總結:</b>${day.apply.aim}</div>
+         <ol class="steps">${day.apply.steps.map(s => `<li>${s}</li>`).join("")}</ol>`,
 
-const tabsHtml = SECTIONS.map(s =>
-  `<a href="#${s.id}" data-t="${s.id}" style="--tc:${s.c}"
-      onclick="goSec(event,'${s.id}')"><span class="dot"></span>${s.name}</a>`).join("");
+    s6: day.bg.map(b => `<div class="bg-item">
+        <div class="bg-head"><b>${b.n}</b><span class="tag ${b.k}">${TAG_LABEL[b.k]}</span></div>
+        <p>${b.p}</p>
+        <div>${refsHtml(b.refs)}</div>
+        ${b.link ? `<a class="xlink" href="${routeUrl(b.link.href)}" target="_blank" rel="noopener">${b.link.label} ›</a>` : ""}
+      </div>`).join(""),
+  };
 
-const secsHtml = SECTIONS.map(s => {
-  const extra = s.id === "s6" ? " · 歷史 / 地理 / 人物 / 風俗" : "";
-  return `<section class="sec-block" id="${s.id}">
-    <div class="card" style="--accent:${s.c}">
-      <div class="card-title"><span class="n">${s.num}</span>${s.name}${extra}</div>
-      ${body[s.id]}
-    </div></section>`;
-}).join("");
+  const tabsHtml = SECTIONS.map(s =>
+    `<a href="#${s.id}" data-t="${s.id}" style="--tc:${s.c}"
+        onclick="goSec(event,'${s.id}')"><span class="dot"></span>${s.name}</a>`).join("");
 
-document.getElementById("wrap").innerHTML = `
-  <div class="d-head">
-    <div class="d-kicker">2026 / 09 · 第 ${n} 天 · 星期${WD[weekday(n)]}</div>
-    <h1 class="d-title"><span class="num">9/${n}</span><span class="thm">${day.theme}</span></h1>
-    <div class="d-meta">
-      <span class="chip pass">${day.ref}</span>
-      <span class="chip">${day.bg.length} 則背景補充</span>
-      <button class="done-btn" id="dbtn" onclick="toggleDone()"></button>
+  const secsHtml = SECTIONS.map(s => {
+    const extra = s.id === "s6" ? " · 歷史 / 地理 / 人物 / 風俗" : "";
+    return `<section class="sec-block" id="${s.id}">
+      <div class="card" style="--accent:${s.c}">
+        <div class="card-title"><span class="n">${s.num}</span>${s.name}${extra}</div>
+        ${body[s.id]}
+      </div></section>`;
+  }).join("");
+
+  const dayLink = k => withMonth("day.html?d=" + k);
+  document.getElementById("wrap").innerHTML = `
+    <div class="d-head">
+      <div class="d-kicker">${MONTH_KEY.replace("-", " / ")} · 第 ${n} 天 · 星期${WD[weekday(n)]}</div>
+      <h1 class="d-title"><span class="num">${md(n)}</span><span class="thm">${day.theme}</span></h1>
+      <div class="d-meta">
+        <span class="chip pass">${day.ref}</span>
+        <span class="chip">${day.bg.length} 則背景補充</span>
+        <button class="done-btn" id="dbtn" onclick="toggleDone()"></button>
+      </div>
     </div>
-  </div>
 
-  <nav class="tabs" id="tabs">${tabsHtml}</nav>
-  ${secsHtml}
+    <nav class="tabs" id="tabs">${tabsHtml}</nav>
+    ${secsHtml}
 
-  <div class="pager">
-    <a href="day.html?d=${n - 1}" class="${n === 1 ? "dis" : ""}">‹ 9/${n - 1}</a>
-    <a href="index.html">回本月進度</a>
-    <a href="day.html?d=${n + 1}" class="${n === 30 ? "dis" : ""}">9/${n + 1} ›</a>
-  </div>`;
+    <div class="pager">
+      <a href="${dayLink(n - 1)}" class="${n === 1 ? "dis" : ""}">‹ ${md(n - 1)}</a>
+      <a href="${withMonth("index.html")}">回本月進度</a>
+      <a href="${dayLink(n + 1)}" class="${n === last ? "dis" : ""}">${md(n + 1)} ›</a>
+    </div>`;
+
+  paintBtn();
+  addEventListener("resize", syncOffset);
+  syncOffset();
+  addEventListener("scroll", spy, { passive: true });
+  spy();
+  document.title = `${md(n)} ${day.theme} · 每日讀經`;
+}
 
 // ── 已讀狀態 ──
 function paintBtn() {
@@ -93,7 +107,6 @@ function paintBtn() {
   b.textContent = ok ? "✓ 今天已讀完" : "標記為已讀";
 }
 function toggleDone() { setDone(n, !isDone(n)); paintBtn(); }
-paintBtn();
 
 // ── 點頁籤捲到該區塊(不改網址,行為比 hash 穩定) ──
 function goSec(e, id) {
@@ -102,37 +115,27 @@ function goSec(e, id) {
 }
 
 // ── 依實際高度計算吸頂位移(導覽列換行時也不會蓋住標題) ──
-const navEl = document.querySelector("nav.nav");
-const tabsEl = document.getElementById("tabs");
-let secOff = 124;
 function syncOffset() {
+  const navEl = document.querySelector("nav.nav"), tabsEl = document.getElementById("tabs");
   const navH = navEl.offsetHeight + 10;           // nav 本身 sticky top:10
   tabsEl.style.setProperty("--tabs-top", navH + 6 + "px");
   secOff = navH + 6 + tabsEl.offsetHeight + 12;
   document.documentElement.style.setProperty("--sec-off", secOff + "px");
 }
-addEventListener("resize", syncOffset);
-syncOffset();
 
 // ── 捲動時標示目前區塊 ──
-const links = [...document.querySelectorAll("#tabs a")];
-const blocks = SECTIONS.map(s => document.getElementById(s.id));
 function spy() {
+  const links = [...document.querySelectorAll("#tabs a")];
+  const blocks = SECTIONS.map(s => document.getElementById(s.id));
   let cur = 0;
   blocks.forEach((el, i) => { if (el.getBoundingClientRect().top <= secOff + 24) cur = i; });
   links.forEach((a, i) => a.classList.toggle("on", i === cur));
-  const active = links[cur];
+  const active = links[cur], bar = document.getElementById("tabs");
   if (active) {
-    const bar = document.getElementById("tabs");
     const left = active.offsetLeft - bar.clientWidth / 2 + active.clientWidth / 2;
     bar.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
   }
 }
-addEventListener("scroll", spy, { passive: true });
-spy();
-
-document.title = `9/${n} ${day.theme} · 九月讀經`;
-renderFooter();
 </script>
 </body>
 </html>

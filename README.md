@@ -1,16 +1,23 @@
-# 每日讀經 · 2026 年 9 月
+# 每日讀經 · 每天兩章
 
-每天兩章、三十天六十章的讀經工具。純靜態網頁,無需建置與伺服器,打開 `index.html` 即可使用。
+每月一份讀經進度,每天兩章。純靜態網頁,無需建置與伺服器,打開 `index.html` 即可使用。
 
 **線上版**:https://nonstopbiblereading.github.io/daily_reading/
 
-## 這是什麼
+## 目前收錄
 
-從使徒行傳的外邦大門,走到羅馬書的彼此接納——一條「福音如何跨越界線、又如何改變我」的三十天路線。
+| 月份 | 主題 | 天數 | 背景補充 |
+|------|------|------|----------|
+| 2026 年 9 月 | 福音如何跨越界線、又如何改變我 | 30 天 60 章 | 162 則 |
+| 2026 年 10 月 | 信心如何落地、恩典如何醫治 | 31 天 62 章 | 175 則 |
 
-- **本月進度**(`index.html`):九月月曆總覽,每格顯示當天兩章與主題。可標記已讀,進度以 `localStorage` 保存。
-- **每日內容**(`day.html?d=N`):六個區塊,可用吸頂頁籤快速切換。
-- **背景索引**(`background.html`):把全月 162 則背景補充集中一頁,可依歷史/地理/人物/文化風俗篩選。
+首頁網址固定不變,預設開啟「今天所在的月份」,沒有就開最新的一個。導覽列左側的月份選單可以切換,切換後網址會帶上 `?m=YYYY-MM`,可直接分享某個月份。
+
+## 頁面
+
+- **本月進度**(`index.html`):月曆總覽,每格顯示當天兩章與主題。可標記已讀,進度以 `localStorage` 保存,每個月分開記。
+- **每日內容**(`day.html?m=YYYY-MM&d=N`):六個區塊,可用吸頂頁籤快速切換。
+- **背景索引**(`background.html?m=YYYY-MM`):把整月的背景補充集中一頁,可依歷史/地理/人物/文化風俗篩選。
 
 ## 每日的六個區塊
 
@@ -23,41 +30,36 @@
 | ⑤ | 今日應用 | 一句總結 + 三個可執行步驟 |
 | ⑥ | 背景補充 | 該日經文需要先知道的歷史、地理、人物、文化風俗 |
 
-「背景補充」是這個工具的重點:第一世紀的地名、官職、幣值、節期與禮俗,不解釋就容易讀過去或讀錯。全月共 162 則,分佈為歷史 41、地理 28、人物 25、文化風俗 68。
+同一段經文在不同日子重複出現時(例如 9/24 與 10/1 都讀雅各書 1–2),內容會換角度,並在心得中註明對照的日期。
 
-## 與歷史地理工具的串接
+## 新增一個月份
 
-部分背景條目會連到 [bible_explorer](https://github.com/nonstopbiblereading/bible_explorer) 系列的地圖、人物網與旅程頁。連結寫在資料裡的 `link.href`,格式為「站台代號:路徑」:
+1. 建立資料夾 `data/YYYY-MM/`,放入五個檔案:
 
-```js
-link:{ href:"paul:map.html",       label:"在地圖上看腓立比" }
-link:{ href:"paul:journey.html?j=4", label:"看第四段旅程" }
-link:{ href:"abraham:",             label:"看亞伯拉罕主題" }
-```
+   ```
+   plan.js        月份主檔(key、label、title、sub、outline)
+   days-01.js     1–10 日
+   days-11.js     11–20 日
+   days-21.js     21 日到月底
+   questions.js   反思問題
+   ```
 
-站台代號對應表定義在 [`js/common.js`](js/common.js) 的 `SITES`(`hub` / `paul` / `jesus` / `abraham` / `exodus`),要換網域只需改那一處。
+   可直接複製 `data/2026-10/` 當範本。
 
-## 檔案結構
+2. 在 [`data/months.js`](data/months.js) 加一行:
 
-```
-index.html          月曆總覽
-day.html            每日內容(?d=1..30)
-background.html     背景索引
-css/style.css       樣式(深/淺色主題)
-js/common.js        導覽列、主題切換、進度、外站連結解析
-data/plan.js        月份設定與 PLAN 骨架
-data/days-01.js     9/1–9/10
-data/days-11.js     9/11–9/20
-data/days-21.js     9/21–9/30
-data/questions.js   反思問題
-```
+   ```js
+   { key: "2026-11", label: "2026 年 11 月" },
+   ```
 
-## 改內容
+月曆的星期排列、天數、每日頁的上下頁都會依月份自動計算。
 
-每一天是 `data/days-*.js` 裡的一個物件:
+## 資料格式
+
+每一天是 `days-*.js` 裡的一個物件:
 
 ```js
-{ d:1, ref:"使徒行傳 10；11", short:"徒 10–11", theme:"福音跨過那道牆",
+{ d:1, ref:"雅各書 1；雅各書 2", short:"雅 1–2", theme:"讓忍耐做完它的工",
   points:  [{ t:小標, r:出處, p:說明 }],
   verses:  [{ q:經文, r:出處, why:為什麼標記 }],
   reflect: [段落…],
@@ -65,9 +67,35 @@ data/questions.js   反思問題
   bg:      [{ k:"history|place|person|custom", n:名稱, p:說明, refs:[], link:{} }] }
 ```
 
-反思問題另外放在 `data/questions.js`,以日期為鍵。
+反思問題放在 `questions.js`,以日期為鍵:`window.QUESTIONS = { 1:[…三題], 2:[…] }`。
 
-換月份時修改 `data/plan.js` 的 `month` / `monthLabel`,並替換 `data/days-*.js`。`index.html` 的月曆會依 `month` 自動排列星期。
+## 與歷史地理工具的串接
+
+部分背景條目會連到 [bible_explorer](https://github.com/nonstopbiblereading/bible_explorer) 系列的地圖、人物網、時間軸與旅程頁。連結寫在資料裡的 `link.href`,格式為「站台代號:路徑」:
+
+```js
+link:{ href:"paul:map.html",         label:"在地圖上看腓立比" }
+link:{ href:"paul:timeline.html",    label:"在時間軸看保羅與羅馬皇帝" }
+link:{ href:"abraham:",              label:"看亞伯拉罕的旅程與應許" }
+link:{ href:"exodus:",               label:"看出埃及主題的路線與西奈山" }
+```
+
+站台代號對應表定義在 [`js/common.js`](js/common.js) 的 `SITES`(`hub` / `paul` / `jesus` / `abraham` / `exodus`),要換網域只需改那一處。
+
+## 檔案結構
+
+```
+index.html              月曆總覽
+day.html                每日內容
+background.html         背景索引
+css/style.css           樣式(深/淺色主題)
+js/common.js            月份載入、導覽列、主題、進度、外站連結解析
+data/months.js          月份清單
+data/2026-09/           九月資料
+data/2026-10/           十月資料
+```
+
+每一頁只會載入當前月份的資料,月份再多也不會拖慢頁面。
 
 ## 說明
 
